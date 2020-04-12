@@ -1,0 +1,95 @@
+@using Oqtane.Modules.Controls
+@using Tres.Smss.Services
+@using Tres.Smss.Models
+
+@namespace Tres.Smss.Modules
+@inherits ModuleBase
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@inject SiteState sitestate
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <label class="control-label">Name: </label>
+        </td>
+        <td>
+            <input id="_name" class="form-control" @bind="@_name" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+    public override string Actions => "Add,Edit";
+
+    ISmsService SmsService;
+    int _id;
+    string _name;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            SmsService = new SmsService(http, sitestate, NavigationManager);
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                Sms Sms = await SmsService.GetSmsAsync(_id);
+                if (Sms != null)
+                {
+                    _name = Sms.Name;
+                    _createdby = Sms.CreatedBy;
+                    _createdon = Sms.CreatedOn;
+                    _modifiedby = Sms.ModifiedBy;
+                    _modifiedon = Sms.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading Sms {SmsId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading Sms", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                Sms Sms = new Sms();
+                Sms.ModuleId = ModuleState.ModuleId;
+                Sms.Name = _name;
+                Sms = await SmsService.AddSmsAsync(Sms);
+                await logger.LogInformation("Sms Added {Sms}", Sms);
+            }
+            else
+            {
+                Sms Sms = await SmsService.GetSmsAsync(_id);
+                Sms.Name = _name;
+                await SmsService.UpdateSmsAsync(Sms);
+                await logger.LogInformation("Sms Updated {Sms}", Sms);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving Sms {Error}", ex.Message);
+            AddModuleMessage("Error Saving Sms", MessageType.Error);
+        }
+    }
+}
