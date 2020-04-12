@@ -15,10 +15,21 @@ namespace Tres.Smss.Controllers
         private readonly ISmsRepository _Smss;
         private readonly ILogManager _logger;
 
+
+        //These would be placed in a config location in a real app.
+        private readonly string _twilioAccountSid;
+        private readonly string _twilioAuthToken;
+
         public SmsController(ISmsRepository Smss, ILogManager logger)
         {
             _Smss = Smss;
             _logger = logger;
+
+
+            _twilioAccountSid = "";
+            _twilioAuthToken = "";
+
+
         }
 
         // GET: api/<controller>?moduleid=x
@@ -32,7 +43,7 @@ namespace Tres.Smss.Controllers
         // GET api/<controller>/5
         [HttpGet("{id}")]
         [Authorize(Roles = Constants.RegisteredRole)]
-        public Sms Get(int id)
+        public Sms Get(int id) 
         {
             return _Smss.GetSms(id);
         }

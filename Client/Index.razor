@@ -13,23 +13,9 @@
 }
 else
 {
-    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add Sms" />
-    <br />
-    <br />
-    @if (@_Smss.Count != 0)
-    {
-        <Pager Items="@_Smss" Format="Grid">
-            <Header>
-                <div class="col"><strong>Smss</strong></div>
-            </Header>
-            <Row>
-                <div class="col">
-                    <ActionLink Action="Edit" Parameters="@($"id=" + context.SmsId.ToString())" />
-                    <ActionDialog Header="Delete Sms" Message="@("Are You Sure You Wish To Delete The " + context.Name + " Sms?")" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" />
-                    @context.Name
-                </div>
-            </Row>
-        </Pager>
+    <input type="text" name="phoneNbr" @bind="phoneNbr" placeholder="Phone Number"/> <br />
+    <input type="text" name="message" @bind="message" placeholder="Message" />
+       
     }
     else
     {
@@ -37,35 +23,11 @@ else
     }
 }
 
-<hr />
-Sms Module Created Successfully. Use Edit Mode To Add A Sms. You Can Access The Files At The Following Locations:<br /><br />
-C:\Users\mc\source\open\Tres.Smss.Module\Client\<br />
-- Tres.Smss.Module.Client.csproj - client project<br />
-- _Imports.razor - global imports for module components<br />
-- Edit.razor - component for adding or editing content<br />
-- Index.razor - main component for your module **the content you are reading is in this file**<br />
-- ModuleInfo.cs - implements IModule interface to provide configuration settings for your module<br />
-- Settings.razor - component for managing module settings<br />
-- Services\ISmsService.cs - interface for defining service API methods<br />
-- Services\SmsService.cs - implements service API interface methods<br /><br />
-C:\Users\mc\source\open\Tres.Smss.Module\Package\<br />
-- Tres.Smss.Module.nuspec - nuget manifest for packaging module<br />
-- Tres.Smss.Module.Package.csproj - packaging project<br />
-- debug.cmd - copies assemblies to Oqtane bin folder when in Debug mode<br />
-- release.cmd - creates nuget package and deploys to Oqtane wwwroot/modules folder when in Release mode<br /><br />
-C:\Users\mc\source\open\Tres.Smss.Module\Server\<br />
-- Tres.Smss.Module.Server.csproj - server project<br />
-- Controllers\SmsController.cs - API methods implemented using a REST pattern<br />
-- Manager\SmsManager.cs - implements optional module interfaces for features such as import/export of content<br />
-- Repository\ISmsRepository.cs - interface for defining repository methods<br />
-- Repository\SmsRespository.cs - implements repository interface methods for data access using EF Core<br />
-- Repository\SmsContext.cs - provides a DB Context for data access<br />
-- Scripts\01.00.00.sql - database schema definition<br /><br />
-C:\Users\mc\source\open\Tres.Smss.Module\Shared\<br />
-- Tres.Smss.Module.Shared.csproj - shared project<br />
-- Models\Sms.cs - model definition<br /><br />
-
 @code {
+
+    string phoneNbr = "";
+    string message = "";
+
     ISmsService SmsService;
     List<Sms> _Smss;
 
@@ -98,4 +60,25 @@ C:\Users\mc\source\open\Tres.Smss.Module\Shared\<br />
             AddModuleMessage("Error Deleting Sms", MessageType.Error);
         }
     }
+
+    private async Task SendMessage()
+    {
+        var sms = new Sms();
+        sms.PhoneNbr = phoneNbr;
+        sms.Message = message;
+
+        try
+        {
+            await SmsService.AddSmsAsync(sms);
+
+            StateHasChanged();
+        }
+        catch ()
+        {
+
+        }
+    }
+
+
+
 }

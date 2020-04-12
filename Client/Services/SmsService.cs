@@ -31,7 +31,7 @@ namespace Tres.Smss.Services
         public async Task<List<Sms>> GetSmssAsync(int ModuleId)
         {
             List<Sms> Smss = await _http.GetJsonAsync<List<Sms>>(Apiurl + "?moduleid=" + ModuleId.ToString());
-            return Smss.OrderBy(item => item.Name).ToList();
+            return Smss.OrderBy(item => item.PhoneNbr).ToList();
         }
 
         public async Task<Sms> GetSmsAsync(int SmsId)
